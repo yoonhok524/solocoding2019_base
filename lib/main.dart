@@ -45,6 +45,7 @@ class MyAppState extends State<MyApp> {
   }
 
   Widget _weatherData(WeatherResp weatherResp) {
+    print(weatherResp);
     return Center(
       child: Column(
         children: <Widget>[
@@ -65,6 +66,10 @@ class MyAppState extends State<MyApp> {
           Text("Humidity: ${weatherResp.main.humidity}"),
           SizedBox(height: 16,),
           Text("Pressure: ${weatherResp.main.pressure}"),
+          SizedBox(height: 16,),
+          Text("Current location (lat, lng): ${weatherResp.name}"),
+          SizedBox(height: 8,),
+          Text("${weatherResp.coord.lat}, ${weatherResp.coord.lon}")
         ],
       ),
     );
@@ -76,15 +81,10 @@ Future<WeatherResp> fetchWeather() async {
   final lat = position.latitude;
   final lon = position.longitude;
 
-  print("lat: $lat");
-  print("lon: $lon");
   final response = await http.get("http://api.openweathermap.org/data/2.5/weather?APPID=d32c3503faad347cb9de70223df148f6&lat=$lat&lon=$lon");
-
   if (response.statusCode == 200) {
-    // 만약 서버로의 요청이 성공하면, JSON을 파싱합니다.
     return WeatherResp.fromJson(json.decode(response.body));
   } else {
-    // 만약 요청이 실패하면, 에러를 던집니다.
     throw Exception('Failed to load post');
   }
 }
@@ -101,11 +101,11 @@ class WeatherResp {
   final Main main;
   final Wind wind;
   final Clouds clouds;
-  final int dt;
+  var dt;
   final Sys sys;
-  final int id;
+  var id;
   final String name;
-  final int cod;
+  var cod;
 
   WeatherResp({this.coord,
     this.weather,
@@ -136,11 +136,16 @@ class WeatherResp {
         name: json['name'],
         cod: json['cod']);
   }
+
+  @override
+  String toString() => 'WeatherResp: {coord: $coord, weather: [$weather], base: $base, main: $main, wind: $wind, clouds: $clouds, dt: $dt, sys: $sys, id: $id, name: $name, cod: $cod}';
+
+
 }
 
 class Coord {
-  int lon;
-  int lat;
+  var lon;
+  var lat;
 
   Coord({this.lat, this.lon});
 
@@ -149,10 +154,13 @@ class Coord {
         lon: json['lon'],
         lat: json['lat'],
       );
+
+  @override
+  String toString() => '{lon: $lon, lat: $lat}';
 }
 
 class Weather {
-  int id;
+  var id;
   String main;
   String description;
   String icon;
@@ -166,14 +174,17 @@ class Weather {
         description: json['description'],
         icon: json['icon'],
       );
+
+  @override
+  String toString() => '{id: $id, main: $main, description: $description, icon: $icon}';
 }
 
 class Main {
-  double temp;
-  int pressure;
-  int humidity;
-  double temp_min;
-  double temp_max;
+  var temp;
+  var pressure;
+  var humidity;
+  var temp_min;
+  var temp_max;
 
   Main({this.temp, this.pressure, this.humidity, this.temp_min, this.temp_max});
 
@@ -185,11 +196,14 @@ class Main {
         temp_min: json['temp_min'],
         temp_max: json['temp_max'],
       );
+
+  @override
+  String toString() => '{temp: $temp, pressure: $pressure, humidity: $humidity, temp_min: $temp_min, temp_max: $temp_max}';
 }
 
 class Wind {
-  double speed;
-  double deg;
+  var speed;
+  var deg;
 
   Wind({this.speed, this.deg});
 
@@ -198,26 +212,32 @@ class Wind {
         speed: json['speed'],
         deg: json['deg'],
       );
+
+  @override
+  String toString() => '{speed: $speed, deg: $deg}';
 }
 
 class Clouds {
-  int all;
+  var all;
 
   Clouds({this.all});
 
   factory Clouds.fromJson(Map<String, dynamic> json) =>
       Clouds(
-          all: json['all'];
+          all: json['all'],
       );
+
+  @override
+  String toString() => '{all: $all}';
 }
 
 class Sys {
-  int type;
-  int id;
-  double message;
+  var type;
+  var id;
+  var message;
   String country;
-  int sunrise;
-  int sunset;
+  var sunrise;
+  var sunset;
 
   Sys({this.type,
     this.id,
@@ -235,4 +255,7 @@ class Sys {
         sunrise: json['sunrise'],
         sunset: json['sunset'],
       );
+
+  @override
+  String toString() => 'Sys: {type: $type, id: $id, message: $message, country: $country, sunrise: $sunrise, sunset: $sunset}';
 }
