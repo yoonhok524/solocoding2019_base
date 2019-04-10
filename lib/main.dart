@@ -50,6 +50,8 @@ class MyAppState extends State<MyApp> {
       child: Column(
         children: <Widget>[
           SizedBox(height: 32,),
+          Image.network("http://openweathermap.org/img/w/${weatherResp.weather[0].icon}.png"),
+          SizedBox(height: 32,),
           Text(weatherResp.weather[0].main, style: Theme
               .of(context)
               .textTheme
