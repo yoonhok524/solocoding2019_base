@@ -1,3 +1,5 @@
+import 'package:dson/dson.dart';
+
 class WeatherResp {
   final Coord coord;
   final List<Weather> weather;
@@ -48,8 +50,8 @@ class WeatherResp {
 }
 
 class Coord {
-  var lon;
-  var lat;
+  final double lon;
+  final double lat;
 
   Coord({this.lat, this.lon});
 
@@ -133,6 +135,21 @@ class Clouds {
 
   @override
   String toString() => '{all: $all}';
+}
+
+class Rain {
+  @SerializedName("3h")
+  final double hour3;
+
+  Rain({this.hour3});
+
+  factory Rain.fromJson(Map<String, dynamic> json) =>
+      Rain(
+        hour3: json['hour3'],
+      );
+
+  @override
+  String toString() => '{3h: $hour3}';
 }
 
 class Sys {
