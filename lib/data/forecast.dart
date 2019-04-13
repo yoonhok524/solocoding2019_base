@@ -3,8 +3,8 @@ import 'package:solocoding2019_base/data/weather.dart';
 class ForecastResp {
   final City city;
   final String cod;
-  final double message;
-  final int cnt;
+  var message;
+  var cnt;
   final List<Forecast> list;
 
   ForecastResp({this.cod, this.message, this.cnt, this.city, this.list});
@@ -28,7 +28,7 @@ class ForecastResp {
 }
 
 class City {
-  final int id;
+  var id;
   final String name;
   final Coord coord;
   final String country;
@@ -45,16 +45,17 @@ class City {
       );
 
   @override
-  String toString() => '{id: $id, name: $name, coord: $coord, country: $country}';
+  String toString() =>
+      '{id: $id, name: $name, coord: $coord, country: $country}';
 }
 
 class Forecast {
   final int dt;
-  final double pressure;
-  final int humidity;
-  final double speed;
-  final int deg;
-  final int clouds;
+  var pressure;
+  var humidity;
+  var speed;
+  var deg;
+  var clouds;
   final Temp temp;
   final List<Weather> weather;
 
@@ -85,21 +86,21 @@ class Forecast {
   }
 
   @override
-  String toString() => '{dt: $dt, pressure: $pressure, humidity: $humidity, speed: $speed, deg: $deg, clouds: $clouds, temp: $temp, weather: $weather}';
+  String toString() =>
+      '{dt: $dt, pressure: $pressure, humidity: $humidity, speed: $speed, deg: $deg, clouds: $clouds, temp: $temp, weather: $weather}';
 }
 
 class Temp {
-  final double day;
-  final double min;
-  final double max;
-  final double night;
-  final double eve;
-  final double morn;
+  var day;
+  var min;
+  var max;
+  var night;
+  var eve;
+  var morn;
 
   Temp({this.day, this.min, this.max, this.night, this.eve, this.morn});
 
-  factory Temp.fromJson(Map<String, dynamic> json) =>
-      Temp(
+  factory Temp.fromJson(Map<String, dynamic> json) => Temp(
         day: json['day'],
         min: json['min'],
         max: json['max'],
@@ -109,7 +110,8 @@ class Temp {
       );
 
   @override
-  String toString() => '{day: $day, min: $min, max: $max, night: $night, eve: $eve, morn: $morn}';
+  String toString() =>
+      '{day: $day, min: $min, max: $max, night: $night, eve: $eve, morn: $morn}';
 }
 
 class Main {
