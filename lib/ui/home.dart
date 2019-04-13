@@ -8,41 +8,29 @@ import 'package:solocoding2019_base/data/weather.dart';
 const _API_KEY = "d32c3503faad347cb9de70223df148f6";
 const _BASE_URL = "http://api.openweathermap.org/data/2.5";
 
-class HomePage extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() => new HomeState();
-}
+class HomePage extends StatelessWidget {
 
-class HomeState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    // set material design app
-
-    return MaterialApp(
-      title: 'solocoding2019', // application name
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Flutter Weather App'), // app bar title
       ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Flutter Weather App'), // app bar title
-        ),
-        body: FutureBuilder<WeatherResp>(
-          future: _fetchWeather(),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return _weatherData(snapshot.data);
-            } else if (snapshot.hasError) {
-              return Text("${snapshot.error}");
-            }
-            return CircularProgressIndicator();
-          },
-        ),
+      body: FutureBuilder<WeatherResp>(
+        future: _fetchWeather(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return _weatherData(context, snapshot.data);
+          } else if (snapshot.hasError) {
+            return Text("${snapshot.error}");
+          }
+          return CircularProgressIndicator();
+        },
       ),
     );
   }
 
-  Widget _weatherData(WeatherResp weatherResp) {
+  Widget _weatherData(BuildContext context, WeatherResp weatherResp) {
     print(weatherResp);
     return Center(
       child: Column(
@@ -97,7 +85,7 @@ class HomeState extends State<HomePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children:
-          forecastResp.list.skip(1).map((i) => _buildForecast(i)).toList(),
+      forecastResp.list.skip(1).map((i) => _buildForecast(i)).toList(),
     );
   }
 
