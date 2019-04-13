@@ -96,11 +96,11 @@ class Main {
 
   factory Main.fromJson(Map<String, dynamic> json) =>
       Main(
-        temp: json['temp'],
+        temp: (json['temp'] - 273.15).toStringAsFixed(1),
         pressure: json['pressure'],
         humidity: json['humidity'],
-        temp_min: json['temp_min'],
-        temp_max: json['temp_max'],
+        temp_min: json['temp_min'] - 273.15,
+        temp_max: json['temp_max'] - 273.15,
       );
 
   @override
