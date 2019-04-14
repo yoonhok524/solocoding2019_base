@@ -4,9 +4,10 @@ import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:solocoding2019_base/data/forecast.dart';
 import 'package:solocoding2019_base/data/weather.dart';
+import 'package:solocoding2019_base/secrets.dart';
 import 'package:solocoding2019_base/ui/map.dart';
 
-const _API_KEY = "d32c3503faad347cb9de70223df148f6";
+//const _API_KEY = "d32c3503faad347cb9de70223df148f6";
 const _BASE_URL = "http://api.openweathermap.org/data/2.5";
 
 class HomePage extends StatefulWidget {
@@ -35,11 +36,13 @@ class HomeState extends State<HomePage> {
                   icon: Icon(Icons.map),
                   onPressed: () async {
                     final result = await _showMapDialog(context, snapshot.data);
-                    setState(() {
-                      print("[Weather] result: $result");
-                      isManual = true;
-                      position = result;
-                    });
+                    if (result != null) {
+                      setState(() {
+                        print("[Weather] result: $result");
+                        isManual = true;
+                        position = result;
+                      });
+                    }
                   },
                 )
               ],
@@ -151,7 +154,7 @@ class HomeState extends State<HomePage> {
             FlatButton(
               child: const Text('CANCEL'),
               onPressed: () {
-                Navigator.of(context).pop(false);
+                Navigator.of(context).pop(null);
               },
             ),
             RaisedButton(
@@ -182,9 +185,11 @@ class HomeState extends State<HomePage> {
 Future<WeatherResp> _fetchWeather(Position position) async {
   final lat = position.latitude;
   final lon = position.longitude;
+  final secret = await SecretLoader(secretPath: "secrets.json").load();
+
 
   final response =
-      await http.get("$_BASE_URL/weather?APPID=$_API_KEY&lat=$lat&lon=$lon");
+      await http.get("$_BASE_URL/weather?APPID=${secret.apiKey}&lat=$lat&lon=$lon");
   if (response.statusCode == 200) {
     return WeatherResp.fromJson(json.decode(response.body));
   } else {
@@ -193,8 +198,9 @@ Future<WeatherResp> _fetchWeather(Position position) async {
 }
 
 Future<ForecastResp> _fetchForecast(double lon, double lat) async {
+  final secret = await SecretLoader(secretPath: "secrets.json").load();
   final response = await http
-      .get("$_BASE_URL/forecast/daily?APPID=$_API_KEY&lat=$lat&lon=$lon&cnt=4");
+      .get("$_BASE_URL/forecast/daily?APPID=${secret.apiKey}&lat=$lat&lon=$lon&cnt=4");
   if (response.statusCode == 200) {
     return ForecastResp.fromJson(json.decode(response.body));
   } else {

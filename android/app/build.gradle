@@ -39,6 +39,9 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField "String", "GOOGLE_MAP_API_KEY", getGoogleMapApiKey()
+        resValue "string", "GOOGLE_MAP_API_KEY", getGoogleMapApiKey()
     }
 
     buildTypes {
@@ -58,4 +61,10 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+}
+
+def getGoogleMapApiKey() {
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    return properties.getProperty("GOOGLE_MAP_API_KEY")
 }
