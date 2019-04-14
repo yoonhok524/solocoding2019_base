@@ -7,7 +7,6 @@ import 'package:solocoding2019_base/data/weather.dart';
 import 'package:solocoding2019_base/secrets.dart';
 import 'package:solocoding2019_base/ui/map.dart';
 
-//const _API_KEY = "d32c3503faad347cb9de70223df148f6";
 const _BASE_URL = "http://api.openweathermap.org/data/2.5";
 
 class HomePage extends StatefulWidget {
