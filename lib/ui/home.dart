@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:solocoding2019_base/data/forecast.dart';
 import 'package:solocoding2019_base/data/weather.dart';
-import 'package:solocoding2019_base/secrets.dart';
+import 'package:solocoding2019_base/utils/secrets.dart';
 import 'package:solocoding2019_base/ui/map.dart';
 
 const _BASE_URL = "http://api.openweathermap.org/data/2.5";
@@ -15,52 +15,54 @@ class HomePage extends StatefulWidget {
 }
 
 class HomeState extends State<HomePage> {
-  Position position;
-  bool isManual = false;
+  Position _position;
+  bool _isManual = false;
 
   @override
-  Widget build(BuildContext context) {
-    print("[Weather] build");
-    return FutureBuilder(
-      future: getCurrentLocation(),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          position = snapshot.data;
+  Widget build(BuildContext context) => FutureBuilder(
+        future: getCurrentLocation(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasData) {
+              _position = snapshot.data;
+              return Scaffold(body: _body());
+            } else {
+              return Scaffold(body: Center(child: CircularProgressIndicator()));
+            }
+          } else {
+            return Scaffold(body: Center(child: CircularProgressIndicator()));
+          }
+        },
+      );
 
-          return Scaffold(
-            appBar: AppBar(
-              title: Text('Flutter Weather App'), // app bar title
-              actions: <Widget>[
-                IconButton(
-                  icon: Icon(Icons.map),
-                  onPressed: () async {
-                    final result = await _showMapDialog(context, snapshot.data);
-                    if (result != null) {
-                      setState(() {
-                        print("[Weather] result: $result");
-                        isManual = true;
-                        position = result;
-                      });
-                    }
-                  },
-                )
-              ],
-            ),
-            body: FutureBuilder<WeatherResp>(
-              future: _fetchWeather(position),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  print("[Weather] weather data build");
-                  return _weatherData(context, snapshot.data);
-                } else if (snapshot.hasError) {
-                  return Text("${snapshot.error}");
-                }
-                return CircularProgressIndicator();
-              },
-            ),
-          );
+  List<Widget> _optionMenus() => <Widget>[
+        IconButton(
+          icon: Icon(Icons.map),
+          onPressed: () async {
+            final result = await _showMapDialog(context, _position);
+            if (result != null) {
+              setState(() {
+                print("[Weather] result: $result");
+                _isManual = true;
+                _position = result;
+              });
+            }
+          },
+        )
+      ];
+
+  Widget _body() {
+    return FutureBuilder<WeatherResp>(
+      future: _fetchWeather(_position),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          if (snapshot.hasData) {
+            return _weatherData(context, snapshot.data);
+          } else if (snapshot.hasError) {
+            return Text("${snapshot.error}");
+          }
         } else {
-          return CircularProgressIndicator();
+          return Center(child: CircularProgressIndicator());
         }
       },
     );
@@ -68,117 +70,151 @@ class HomeState extends State<HomePage> {
 
   Widget _weatherData(BuildContext context, WeatherResp weatherResp) {
     print("[Weather] $weatherResp");
-    return Center(
-      child: Column(
-        children: <Widget>[
-          SizedBox(height: 32),
-          Image.network(
-              "http://openweathermap.org/img/w/${weatherResp.weather[0].icon}.png"),
-          SizedBox(height: 32),
-          Text(
-            weatherResp.weather[0].main,
-            style: Theme.of(context).textTheme.headline,
+    return CustomScrollView(
+      slivers: <Widget>[
+        SliverAppBar(
+          title: Text(weatherResp.name),
+          actions: _optionMenus(),
+          expandedHeight: 200.0,
+          flexibleSpace: FlexibleSpaceBar(
+            collapseMode: CollapseMode.parallax,
+            background: Image.network(
+                "http://openweathermap.org/img/w/${weatherResp.weather[0].icon}.png"),
+            centerTitle: true,
+            title: Text(
+                "${weatherResp.weather[0].main}, ${weatherResp.main.temp}℃"),
           ),
-          SizedBox(height: 32),
-          Text("Current Temp: ${weatherResp.main.temp}℃"),
-          SizedBox(height: 16),
-          Text("Min Temp: ${weatherResp.main.temp_min}℃"),
-          SizedBox(height: 16),
-          Text("Max Temp: ${weatherResp.main.temp_max}℃"),
-          SizedBox(height: 16),
-          Text("Humidity: ${weatherResp.main.humidity}%"),
-          SizedBox(height: 16),
-          Text("Pressure: ${weatherResp.main.pressure}hPa"),
-          SizedBox(height: 16),
-          Text("Current location (lat, lng): ${weatherResp.name}"),
-          SizedBox(height: 8),
-          Text("${weatherResp.coord.lat}, ${weatherResp.coord.lon}"),
-          SizedBox(height: 16),
-          _forecast(weatherResp.coord.lon, weatherResp.coord.lat),
-        ],
-      ),
+        ),
+        SliverList(
+            delegate: SliverChildListDelegate(buildWeather(weatherResp))),
+      ],
     );
   }
 
-  _forecast(double lon, double lat) {
-    return FutureBuilder<ForecastResp>(
-      future: _fetchForecast(lon, lat),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return _forecastData(snapshot.data);
-        } else if (snapshot.hasError) {
-          return Text("${snapshot.error}");
-        }
+  Widget _forecast(double lon, double lat) => FutureBuilder<ForecastResp>(
+        future: _fetchForecast(lon, lat),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasData) {
+              return _forecastData(snapshot.data);
+            } else if (snapshot.hasError) {
+              return Text("${snapshot.error}");
+            }
+          } else {
+            return Center(child: CircularProgressIndicator());
+          }
+        },
+      );
 
-        return CircularProgressIndicator();
-      },
-    );
-  }
+  Widget _forecastData(ForecastResp forecastResp) => Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children:
+            forecastResp.list.skip(1).map((i) => _buildForecast(i)).toList(),
+      );
 
-  _forecastData(ForecastResp forecastResp) {
-    print("[Weather] _forecastData");
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children:
-          forecastResp.list.skip(1).map((i) => _buildForecast(i)).toList(),
-    );
-  }
-
-  Widget _buildForecast(Forecast forecast) {
-    final dt = DateTime.fromMillisecondsSinceEpoch(forecast.dt * 1000);
-    final date = "${dt.month}/${dt.day}";
-    return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 16),
-      child: Column(
-        children: <Widget>[
-          Image.network(
-              "http://openweathermap.org/img/w/${forecast.weather.first.icon}.png"),
-          Text(forecast.weather.first.main),
-          Text(date)
-        ],
-      ),
-    );
-  }
-
-  Future<Position> _showMapDialog(BuildContext context, position) {
-    return showDialog<Position>(
-      context: context,
-      barrierDismissible: false, // user must tap button for close dialog!
-      builder: (BuildContext context) {
-        MapView mapView = MapView(position);
-        return AlertDialog(
-          title: Text('Select Location'),
-          content: mapView,
-          actions: <Widget>[
-            FlatButton(
-              child: const Text('CANCEL'),
-              onPressed: () {
-                Navigator.of(context).pop(null);
-              },
-            ),
-            RaisedButton(
-              child: const Text(
-                'SELECT',
-                style: TextStyle(color: Colors.white),
-              ),
-              onPressed: () {
-                Navigator.of(context).pop(mapView.position);
-              },
-            )
+  Widget _buildForecast(Forecast forecast) => Expanded(
+        child: Column(
+          children: <Widget>[
+            Image.network(
+                "http://openweathermap.org/img/w/${forecast.weather.first.icon}.png"),
+            Text(forecast.weather.first.main),
+            Text(_getDate(forecast.dt))
           ],
-        );
-      },
-    );
-  }
+        ),
+      );
+
+  Future<Position> _showMapDialog(BuildContext context, position) =>
+      showDialog<Position>(
+        context: context,
+        barrierDismissible: false, // user must tap button for close dialog!
+        builder: (BuildContext context) {
+          MapView mapView = MapView(position);
+          return AlertDialog(
+            title: Text('Select Location'),
+            content: mapView,
+            actions: <Widget>[
+              FlatButton(
+                child: const Text('CANCEL'),
+                onPressed: () {
+                  Navigator.of(context).pop(null);
+                },
+              ),
+              RaisedButton(
+                child: const Text(
+                  'SELECT',
+                  style: TextStyle(color: Colors.white),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop(mapView.position);
+                },
+              )
+            ],
+          );
+        },
+      );
 
   Future<Position> getCurrentLocation() async {
-    if (isManual) {
-      return position;
+    if (_isManual) {
+      return _position;
     } else {
       return await Geolocator()
           .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     }
   }
+
+  List<Widget> buildWeather(WeatherResp weatherResp) {
+    return <Widget>[
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(weatherResp.weather.first.description),
+      ),
+      SizedBox(height: 16),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text("Min Temp: ${weatherResp.main.temp_min}℃"),
+      ),
+      SizedBox(height: 16),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text("Max Temp: ${weatherResp.main.temp_max}℃"),
+      ),
+      SizedBox(height: 16),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text("Humidity: ${weatherResp.main.humidity}%"),
+      ),
+      SizedBox(height: 16),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text("Pressure: ${weatherResp.main.pressure}hPa"),
+      ),
+      SizedBox(height: 16),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text("Wind Speed: ${weatherResp.wind.speed}m/s"),
+      ),
+      SizedBox(height: 16),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text("Cloudiness: ${weatherResp.clouds.all}%"),
+      ),
+      SizedBox(height: 32),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text("Forecast", style: Theme.of(context).textTheme.headline),
+      ),
+      SizedBox(height: 8),
+      Padding(
+        padding: const EdgeInsets.only(left: 8, right: 8, bottom: 320),
+        child: _forecast(weatherResp.coord.lon, weatherResp.coord.lat),
+      )
+    ];
+  }
+}
+
+String _getDate(int dateTime) {
+  final dt = DateTime.fromMillisecondsSinceEpoch(dateTime * 1000);
+  return "${dt.month}/${dt.day}";
 }
 
 Future<WeatherResp> _fetchWeather(Position position) async {
@@ -186,9 +222,8 @@ Future<WeatherResp> _fetchWeather(Position position) async {
   final lon = position.longitude;
   final secret = await SecretLoader(secretPath: "secrets.json").load();
 
-
-  final response =
-      await http.get("$_BASE_URL/weather?APPID=${secret.apiKey}&lat=$lat&lon=$lon");
+  final response = await http
+      .get("$_BASE_URL/weather?APPID=${secret.apiKey}&lat=$lat&lon=$lon");
   if (response.statusCode == 200) {
     return WeatherResp.fromJson(json.decode(response.body));
   } else {
@@ -198,8 +233,8 @@ Future<WeatherResp> _fetchWeather(Position position) async {
 
 Future<ForecastResp> _fetchForecast(double lon, double lat) async {
   final secret = await SecretLoader(secretPath: "secrets.json").load();
-  final response = await http
-      .get("$_BASE_URL/forecast/daily?APPID=${secret.apiKey}&lat=$lat&lon=$lon&cnt=4");
+  final response = await http.get(
+      "$_BASE_URL/forecast/daily?APPID=${secret.apiKey}&lat=$lat&lon=$lon&cnt=4");
   if (response.statusCode == 200) {
     return ForecastResp.fromJson(json.decode(response.body));
   } else {

@@ -99,8 +99,8 @@ class Main {
         temp: (json['temp'] - 273.15).toStringAsFixed(1),
         pressure: json['pressure'],
         humidity: json['humidity'],
-        temp_min: json['temp_min'] - 273.15,
-        temp_max: json['temp_max'] - 273.15,
+        temp_min: (json['temp_min'] - 273.15).toStringAsFixed(1),
+        temp_max: (json['temp_max'] - 273.15).toStringAsFixed(1),
       );
 
   @override
