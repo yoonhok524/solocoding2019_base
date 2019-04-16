@@ -81,7 +81,7 @@ class HomeState extends State<HomePage> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData) {
-            return _weatherPage(context, snapshot.data);
+            return _weatherPages(snapshot.data);
           } else if (snapshot.hasError) {
             return Text("${snapshot.error}");
           }
@@ -92,18 +92,18 @@ class HomeState extends State<HomePage> {
     );
   }
 
-  Widget _weatherPage(BuildContext context, WeatherResp weatherResp) {
+  Widget _weatherPages(WeatherResp weatherResp) {
     return PageView(
       controller: pageController,
       children: <Widget>[
-        _weatherData(weatherResp),
-        _weatherData(weatherResp),
-        _weatherData(weatherResp),
+        _weatherPage(weatherResp),
+        _weatherPage(weatherResp),
+        _weatherPage(weatherResp),
       ],
     );
   }
 
-  Widget _weatherData(WeatherResp weatherResp) {
+  Widget _weatherPage(WeatherResp weatherResp) {
     print("[Weather] $weatherResp");
     return Center(
       child: SizedBox(
@@ -113,31 +113,65 @@ class HomeState extends State<HomePage> {
           decoration: BoxDecoration(
               color: Colors.lightBlue, borderRadius: BorderRadius.circular(24)),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Text(weatherResp.name),
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    weatherResp.name,
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                ),
+              ),
               Image.network(
                   "http://openweathermap.org/img/w/${weatherResp.weather[0].icon}.png"),
-              Text("${weatherResp.weather[0].main}, ${weatherResp.main.temp}℃"),
-              SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                    "Temp: ${weatherResp.main.temp_min}℃ ~ ${weatherResp.main.temp_max}℃"),
+              Text(
+                "${weatherResp.weather[0].main}",
+                style: TextStyle(
+                    fontSize: 24,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text("Humidity: ${weatherResp.main.humidity}%"),
+              SizedBox(
+                height: 8,
               ),
-              SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text("Forecast",
-                    style: Theme.of(context).textTheme.headline),
+              Text(
+                "${weatherResp.main.temp}℃",
+                style: TextStyle(fontSize: 16, color: Colors.white),
               ),
-              SizedBox(height: 8),
+              SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+                  Column(
+                    children: <Widget>[
+                      Text("Min Temp", style: TextStyle(color: Colors.white70)),
+                      Text("${weatherResp.main.temp_min}℃",
+                          style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                  Column(
+                    children: <Widget>[
+                      Text("Max Temp", style: TextStyle(color: Colors.white70)),
+                      Text("${weatherResp.main.temp_max}℃",
+                          style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                ],
+              ),
+              SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Forecast",
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                ),
+              ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: _forecast(weatherResp.coord.lon, weatherResp.coord.lat),
@@ -204,7 +238,6 @@ class HomeState extends State<HomePage> {
       );
 
   Widget _forecastData(ForecastResp forecastResp) => Row(
-        mainAxisAlignment: MainAxisAlignment.center,
         children:
             forecastResp.list.skip(1).map((i) => _buildForecast(i)).toList(),
       );
@@ -212,10 +245,10 @@ class HomeState extends State<HomePage> {
   Widget _buildForecast(Forecast forecast) => Expanded(
         child: Column(
           children: <Widget>[
+            Text(_getDate(forecast.dt), style: TextStyle(color: Colors.white)),
             Image.network(
                 "http://openweathermap.org/img/w/${forecast.weather.first.icon}.png"),
-            Text(forecast.weather.first.main),
-            Text(_getDate(forecast.dt))
+            Text(forecast.weather.first.main, style: TextStyle(color: Colors.white)),
           ],
         ),
       );
