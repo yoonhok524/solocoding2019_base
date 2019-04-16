@@ -17,6 +17,24 @@ class HomePage extends StatefulWidget {
 class HomeState extends State<HomePage> {
   Position _position;
   bool _isManual = false;
+  PageController pageController;
+  int currentPage = 0;
+
+  @override
+  initState() {
+    super.initState();
+    pageController = PageController(
+      initialPage: currentPage,
+      keepPage: false,
+      viewportFraction: 0.8,
+    );
+  }
+
+  @override
+  dispose() {
+    pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
@@ -25,7 +43,13 @@ class HomeState extends State<HomePage> {
           if (snapshot.connectionState == ConnectionState.done) {
             if (snapshot.hasData) {
               _position = snapshot.data;
-              return Scaffold(body: _body());
+              return Scaffold(
+                appBar: AppBar(
+                  title: Text("Flutter Weather App"),
+                  actions: _optionMenus(),
+                ),
+                body: _body(),
+              );
             } else {
               return Scaffold(body: Center(child: CircularProgressIndicator()));
             }
@@ -57,7 +81,7 @@ class HomeState extends State<HomePage> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData) {
-            return _weatherData(context, snapshot.data);
+            return _weatherPage(context, snapshot.data);
           } else if (snapshot.hasError) {
             return Text("${snapshot.error}");
           }
@@ -68,60 +92,62 @@ class HomeState extends State<HomePage> {
     );
   }
 
-  Widget _weatherData(BuildContext context, WeatherResp weatherResp) {
-    print("[Weather] $weatherResp");
-    return CustomScrollView(
-      slivers: <Widget>[
-        SliverAppBar(
-          title: Text(weatherResp.name),
-          actions: _optionMenus(),
-          expandedHeight: 200.0,
-          flexibleSpace: FlexibleSpaceBar(
-            collapseMode: CollapseMode.parallax,
-            background: Image.network(
-                "http://openweathermap.org/img/w/${weatherResp.weather[0].icon}.png"),
-            centerTitle: true,
-            title: Text(
-                "${weatherResp.weather[0].main}, ${weatherResp.main.temp}℃"),
-          ),
-        ),
-        SliverList(
-            delegate: SliverChildListDelegate(buildWeather(weatherResp))),
+  Widget _weatherPage(BuildContext context, WeatherResp weatherResp) {
+    return PageView(
+      controller: pageController,
+      children: <Widget>[
+        _weatherData(weatherResp),
+        _weatherData(weatherResp),
+        _weatherData(weatherResp),
       ],
     );
   }
 
-  Widget _forecast(double lon, double lat) => FutureBuilder<ForecastResp>(
-        future: _fetchForecast(lon, lat),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.hasData) {
-              return _forecastData(snapshot.data);
-            } else if (snapshot.hasError) {
-              return Text("${snapshot.error}");
-            }
-          } else {
-            return Center(child: CircularProgressIndicator());
-          }
-        },
-      );
-
-  Widget _forecastData(ForecastResp forecastResp) => Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children:
-            forecastResp.list.skip(1).map((i) => _buildForecast(i)).toList(),
-      );
-
-  Widget _buildForecast(Forecast forecast) => Expanded(
-        child: Column(
-          children: <Widget>[
-            Image.network(
-                "http://openweathermap.org/img/w/${forecast.weather.first.icon}.png"),
-            Text(forecast.weather.first.main),
-            Text(_getDate(forecast.dt))
-          ],
+  Widget _weatherData(WeatherResp weatherResp) {
+    print("[Weather] $weatherResp");
+    return Center(
+      child: SizedBox(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.7,
+          height: MediaQuery.of(context).size.height * 0.7,
+          decoration: BoxDecoration(
+              color: Colors.lightBlue, borderRadius: BorderRadius.circular(24)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(weatherResp.name),
+              Image.network(
+                  "http://openweathermap.org/img/w/${weatherResp.weather[0].icon}.png"),
+              Text("${weatherResp.weather[0].main}, ${weatherResp.main.temp}℃"),
+              SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                    "Temp: ${weatherResp.main.temp_min}℃ ~ ${weatherResp.main.temp_max}℃"),
+              ),
+              SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text("Humidity: ${weatherResp.main.humidity}%"),
+              ),
+              SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text("Forecast",
+                    style: Theme.of(context).textTheme.headline),
+              ),
+              SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: _forecast(weatherResp.coord.lon, weatherResp.coord.lat),
+              )
+            ],
+          ),
         ),
-      );
+      ),
+    );
+  }
 
   Future<Position> _showMapDialog(BuildContext context, position) =>
       showDialog<Position>(
@@ -162,59 +188,37 @@ class HomeState extends State<HomePage> {
     }
   }
 
-  List<Widget> buildWeather(WeatherResp weatherResp) {
-    return <Widget>[
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text(weatherResp.weather.first.description),
-      ),
-      SizedBox(height: 16),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text("Min Temp: ${weatherResp.main.temp_min}℃"),
-      ),
-      SizedBox(height: 16),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text("Max Temp: ${weatherResp.main.temp_max}℃"),
-      ),
-      SizedBox(height: 16),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text("Humidity: ${weatherResp.main.humidity}%"),
-      ),
-      SizedBox(height: 16),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text("Pressure: ${weatherResp.main.pressure}hPa"),
-      ),
-      SizedBox(height: 16),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text("Wind Speed: ${weatherResp.wind.speed}m/s"),
-      ),
-      SizedBox(height: 16),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text("Cloudiness: ${weatherResp.clouds.all}%"),
-      ),
-      SizedBox(height: 32),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text("Forecast", style: Theme.of(context).textTheme.headline),
-      ),
-      SizedBox(height: 8),
-      Padding(
-        padding: const EdgeInsets.only(left: 8, right: 8, bottom: 320),
-        child: _forecast(weatherResp.coord.lon, weatherResp.coord.lat),
-      )
-    ];
-  }
-}
+  Widget _forecast(double lon, double lat) => FutureBuilder<ForecastResp>(
+        future: _fetchForecast(lon, lat),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasData) {
+              return _forecastData(snapshot.data);
+            } else if (snapshot.hasError) {
+              return Text("${snapshot.error}");
+            }
+          } else {
+            return Center(child: CircularProgressIndicator());
+          }
+        },
+      );
 
-String _getDate(int dateTime) {
-  final dt = DateTime.fromMillisecondsSinceEpoch(dateTime * 1000);
-  return "${dt.month}/${dt.day}";
+  Widget _forecastData(ForecastResp forecastResp) => Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children:
+            forecastResp.list.skip(1).map((i) => _buildForecast(i)).toList(),
+      );
+
+  Widget _buildForecast(Forecast forecast) => Expanded(
+        child: Column(
+          children: <Widget>[
+            Image.network(
+                "http://openweathermap.org/img/w/${forecast.weather.first.icon}.png"),
+            Text(forecast.weather.first.main),
+            Text(_getDate(forecast.dt))
+          ],
+        ),
+      );
 }
 
 Future<WeatherResp> _fetchWeather(Position position) async {
@@ -240,4 +244,9 @@ Future<ForecastResp> _fetchForecast(double lon, double lat) async {
   } else {
     throw Exception('Failed to load post');
   }
+}
+
+String _getDate(int dateTime) {
+  final dt = DateTime.fromMillisecondsSinceEpoch(dateTime * 1000);
+  return "${dt.month}/${dt.day}";
 }
