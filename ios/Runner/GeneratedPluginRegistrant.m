@@ -7,6 +7,7 @@
 #import <google_api_availability/GoogleApiAvailabilityPlugin.h>
 #import <google_maps_flutter/GoogleMapsPlugin.h>
 #import <permission_handler/PermissionHandlerPlugin.h>
+#import <sqflite/SqflitePlugin.h>
 
 @implementation GeneratedPluginRegistrant
 
@@ -15,6 +16,7 @@
   [GoogleApiAvailabilityPlugin registerWithRegistrar:[registry registrarForPlugin:@"GoogleApiAvailabilityPlugin"]];
   [FLTGoogleMapsPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTGoogleMapsPlugin"]];
   [PermissionHandlerPlugin registerWithRegistrar:[registry registrarForPlugin:@"PermissionHandlerPlugin"]];
+  [SqflitePlugin registerWithRegistrar:[registry registrarForPlugin:@"SqflitePlugin"]];
 }
 
 @end

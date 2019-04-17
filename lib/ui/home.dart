@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
-import 'package:solocoding2019_base/data/forecast.dart';
-import 'package:solocoding2019_base/data/weather.dart';
+import 'package:solocoding2019_base/data/model/forecast.dart';
+import 'package:solocoding2019_base/data/model/weather.dart';
 import 'package:solocoding2019_base/utils/secrets.dart';
 import 'package:solocoding2019_base/ui/map.dart';
 
