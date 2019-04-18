@@ -7,11 +7,11 @@ class WeatherResp {
   final Main main;
   final Wind wind;
   final Clouds clouds;
-  var dt;
+  final int dt;
   final Sys sys;
-  var id;
+  final int id;
   final String name;
-  var cod;
+  final int cod;
 
   WeatherResp({this.coord,
     this.weather,
@@ -50,8 +50,8 @@ class WeatherResp {
 }
 
 class Coord {
-  final double lon;
-  final double lat;
+  var lon;
+  var lat;
 
   Coord({this.lat, this.lon});
 
@@ -66,10 +66,10 @@ class Coord {
 }
 
 class Weather {
-  var id;
-  String main;
-  String description;
-  String icon;
+  final int id;
+  final String main;
+  final String description;
+  final String icon;
 
   Weather({this.id, this.main, this.description, this.icon});
 

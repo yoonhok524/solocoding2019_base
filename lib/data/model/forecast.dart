@@ -149,9 +149,3 @@ class Main {
   String toString() =>
       '{temp: $temp, temp_min: $temp_min, temp_max: $temp_max, pressure: $pressure, sea_level: $sea_level, grnd_level: $grnd_level, humidity: $humidity, temp_kf: $temp_kf';
 }
-
-//{
-//    "sys": {
-//        "pod": "n"
-//    },
-//},
