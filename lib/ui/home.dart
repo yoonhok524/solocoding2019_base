@@ -2,8 +2,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
+import 'package:solocoding2019_base/bloc/recentSearchesBloc.dart';
 import 'package:solocoding2019_base/data/model/forecast.dart';
+import 'package:solocoding2019_base/data/model/recent.dart';
 import 'package:solocoding2019_base/data/model/weather.dart';
+import 'package:solocoding2019_base/data/source/recentLocalDao.dart';
 import 'package:solocoding2019_base/utils/secrets.dart';
 import 'package:solocoding2019_base/ui/map.dart';
 
@@ -15,6 +18,8 @@ class HomePage extends StatefulWidget {
 }
 
 class HomeState extends State<HomePage> {
+  final RecentSearchesBloc bloc = RecentSearchesBloc(RecentLocalDataSource());
+
   Position _position;
   bool _isManual = false;
   PageController pageController;
@@ -72,7 +77,19 @@ class HomeState extends State<HomePage> {
               });
             }
           },
-        )
+        ),
+        IconButton(
+          icon: Icon(Icons.history),
+          onPressed: () async {
+            final result = await Navigator.pushNamed(context, '/recentSearches');
+            if (result is Recent) {
+              setState(() {
+                _position = Position(latitude: result.lat, longitude: result.lon);
+              });
+            }
+            print("[Weather] result: $result");
+          },
+        ),
       ];
 
   Widget _body() {
@@ -93,6 +110,10 @@ class HomeState extends State<HomePage> {
   }
 
   Widget _weatherPages(WeatherResp weatherResp) {
+    if (_isManual) {
+      bloc.save.add(Recent(id: "${_position.longitude}_${_position.latitude}", name: weatherResp.name, time: DateTime.now().millisecondsSinceEpoch, lon: _position.longitude, lat: _position.latitude));
+    }
+
     return PageView(
       controller: pageController,
       children: <Widget>[
@@ -248,7 +269,8 @@ class HomeState extends State<HomePage> {
             Text(_getDate(forecast.dt), style: TextStyle(color: Colors.white)),
             Image.network(
                 "http://openweathermap.org/img/w/${forecast.weather.first.icon}.png"),
-            Text(forecast.weather.first.main, style: TextStyle(color: Colors.white)),
+            Text(forecast.weather.first.main,
+                style: TextStyle(color: Colors.white)),
           ],
         ),
       );

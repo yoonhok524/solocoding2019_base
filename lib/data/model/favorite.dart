@@ -1,12 +1,12 @@
-class Location {
+class Favorite {
   final int id;
   final String name;
   final double lon;
   final double lat;
 
-  Location({this.id, this.name, this.lon, this.lat});
+  Favorite({this.id, this.name, this.lon, this.lat});
 
-  factory Location.fromJson(Map<String, dynamic> json) => Location(
+  factory Favorite.fromJson(Map<String, dynamic> json) => Favorite(
         id: json['id'],
         name: json['name'],
         lon: json['lon'],
@@ -21,5 +21,5 @@ class Location {
       };
 
   @override
-  String toString() => 'Location{id: $id, name: $name, lon: $lon, lat: $lat}';
+  String toString() => 'Favorite{id: $id, name: $name, lon: $lon, lat: $lat}';
 }
