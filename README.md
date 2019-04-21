@@ -19,8 +19,4 @@ Base Project for solocoding
 
 ## Screenshot
 
-![Home](https://github.com/yoonhok524/solocoding2019_base/blob/master/screenshots/home.png?raw=true)
-![Favorite](https://github.com/yoonhok524/solocoding2019_base/blob/master/screenshots/favorite.png?raw=true)
-![Map Dialog](https://github.com/yoonhok524/solocoding2019_base/blob/master/screenshots/map_select_dialog.png?raw=true)
-![Recent Search](https://github.com/yoonhok524/solocoding2019_base/blob/master/screenshots/recent_search.png?raw=true)
-![Notification](https://github.com/yoonhok524/solocoding2019_base/blob/master/screenshots/noti.png?raw=true)
+![screenshot](https://github.com/yoonhok524/solocoding2019_base/blob/master/screenshots/screenshot.jpg?raw=true)
