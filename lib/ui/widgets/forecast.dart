@@ -6,20 +6,15 @@ import 'package:solocoding2019_base/data/model/forecast.dart';
 import 'package:solocoding2019_base/ui/home.dart';
 import 'package:solocoding2019_base/utils/secrets.dart';
 
-class ForecastWidget extends StatefulWidget {
-  final double lon;
-  final double lat;
+class ForecastWidget extends StatelessWidget {
+  var lon;
+  var lat;
 
   ForecastWidget(this.lon, this.lat);
 
   @override
-  State<StatefulWidget> createState() => _ForecastState();
-}
-
-class _ForecastState extends State<ForecastWidget> {
-  @override
   Widget build(BuildContext context) => FutureBuilder<ForecastResp>(
-      future: _fetchForecast(widget.lon, widget.lat),
+      future: _fetchForecast(lon, lat),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData) {
@@ -45,21 +40,21 @@ class _ForecastState extends State<ForecastWidget> {
   }
 
   Widget _forecastData(ForecastResp forecastResp) => Row(
-        children:
-            forecastResp.list.skip(1).map((i) => _buildForecast(i)).toList(),
-      );
+    children:
+    forecastResp.list.skip(1).map((i) => _buildForecast(i)).toList(),
+  );
 
   Widget _buildForecast(Forecast forecast) => Expanded(
-        child: Column(
-          children: <Widget>[
-            Text(_getDate(forecast.dt), style: TextStyle(color: Colors.white)),
-            Image.network(
-                "http://openweathermap.org/img/w/${forecast.weather.first.icon}.png"),
-            Text(forecast.weather.first.main,
-                style: TextStyle(color: Colors.white)),
-          ],
-        ),
-      );
+    child: Column(
+      children: <Widget>[
+        Text(_getDate(forecast.dt), style: TextStyle(color: Colors.white)),
+        Image.network(
+            "http://openweathermap.org/img/w/${forecast.weather.first.icon}.png"),
+        Text(forecast.weather.first.main,
+            style: TextStyle(color: Colors.white)),
+      ],
+    ),
+  );
 }
 
 String _getDate(int dateTime) {

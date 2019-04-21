@@ -2,10 +2,10 @@ import 'package:solocoding2019_base/data/model/favorite.dart';
 import 'package:solocoding2019_base/data/database.dart';
 import 'package:sqflite/sqflite.dart';
 
-class FavoriteLocalDataSource {
+class FavoriteLocalDao {
   var _db;
 
-  FavoriteLocalDataSource() {
+  FavoriteLocalDao() {
     _db = DatabaseHelper().getDatabase();
   }
 

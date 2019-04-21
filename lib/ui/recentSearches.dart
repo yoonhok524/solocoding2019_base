@@ -4,7 +4,7 @@ import 'package:solocoding2019_base/data/model/recent.dart';
 import 'package:solocoding2019_base/data/source/recentLocalDao.dart';
 
 class RecentSearchesPage extends StatelessWidget {
-  final RecentSearchesBloc bloc = RecentSearchesBloc(RecentLocalDataSource());
+  final RecentSearchesBloc bloc = RecentSearchesBloc(RecentLocalDao());
 
   @override
   Widget build(BuildContext context) {
@@ -43,26 +43,18 @@ class RecentSearchesPage extends StatelessWidget {
   Widget _buildItem(BuildContext context, Recent recent) {
     final dt = DateTime.fromMillisecondsSinceEpoch(recent.time);
     return InkWell(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Expanded(
-              child: Text(
-                recent.name,
-                style: Theme.of(context).textTheme.headline,
-              ),
-            ),
-            Text(
-                "${dt.year}-${dt.month}-${dt.day} ${dt.hour}:${dt.minute}:${dt.second}"),
-          ],
+      child: ListTile(
+        leading: Text(
+          recent.name,
+          style: Theme.of(context).textTheme.headline,
         ),
+        trailing: Text(
+            "${dt.year}-${dt.month}-${dt.day} ${dt.hour}:${dt.minute}:${dt.second}"),
+        onTap: () {
+          print("[Weather] RecentSearch - onTap: $recent");
+          Navigator.pop(context, recent);
+        },
       ),
-      onTap: () {
-        print("[Weather] RecentSearch - onTap: $recent");
-        Navigator.pop(context, recent);
-      },
     );
   }
 }

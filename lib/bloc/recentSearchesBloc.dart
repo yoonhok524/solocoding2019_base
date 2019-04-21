@@ -3,7 +3,7 @@ import 'package:solocoding2019_base/data/source/recentLocalDao.dart';
 import 'package:rxdart/rxdart.dart';
 
 class RecentSearchesBloc {
-  final RecentLocalDataSource _recentSearchDao;
+  final RecentLocalDao _recentSearchDao;
 
   final _getRecentSearchesSubject = PublishSubject<List<Recent>>();
 
@@ -21,7 +21,7 @@ class RecentSearchesBloc {
 
   Future<Null> _getAll() async {
     await _recentSearchDao.getAll().then((list) {
-      print("[Weather] _getAll: ${list.length}");
+      print("[Weather] recentSearch - getAll: ${list.length}");
       _getRecentSearchesSubject.add(list.reversed.toList());
     });
   }

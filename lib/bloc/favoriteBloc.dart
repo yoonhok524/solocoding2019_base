@@ -3,7 +3,7 @@ import 'package:solocoding2019_base/data/source/favoriteLocalDao.dart';
 import 'package:rxdart/rxdart.dart';
 
 class FavoriteBloc {
-  final FavoriteLocalDataSource _favoriteDao;
+  final FavoriteLocalDao _favoriteDao;
   final String _favoriteId;
 
   final _getSubject = PublishSubject<Favorite>();

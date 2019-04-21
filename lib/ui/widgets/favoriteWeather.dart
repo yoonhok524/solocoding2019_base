@@ -1,30 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:solocoding2019_base/bloc/favoriteBloc.dart';
+import 'package:solocoding2019_base/bloc/weatherBloc.dart';
 import 'package:solocoding2019_base/data/model/favorite.dart';
 import 'package:solocoding2019_base/data/model/weather.dart';
 import 'package:solocoding2019_base/data/source/favoriteLocalDao.dart';
 import 'package:solocoding2019_base/ui/widgets/forecast.dart';
 
-class WeatherWidget extends StatefulWidget {
-  final WeatherResp weatherResp;
+class FavoriteWeatherWidget extends StatefulWidget {
+  final Position position;
 
-  WeatherWidget(this.weatherResp);
+  FavoriteWeatherWidget(this.position);
 
   @override
   State<StatefulWidget> createState() => _WeatherState();
 }
 
-class _WeatherState extends State<WeatherWidget> {
-  FavoriteBloc bloc;
+class _WeatherState extends State<FavoriteWeatherWidget> {
+  FavoriteBloc favoriteBloc;
+  WeatherBloc weatherBloc;
   bool isFavorite = false;
 
   @override
   Widget build(BuildContext context) {
-    final favoriteId = "${widget.weatherResp.coord.lat}-${widget.weatherResp.coord.lon}";
-    bloc = FavoriteBloc(FavoriteLocalDataSource(), favoriteId);
+    print("[Weather] weather widget build");
+    final favoriteId = "${widget.position.latitude}-${widget.position.longitude}";
+    favoriteBloc = FavoriteBloc(FavoriteLocalDao(), favoriteId);
+    weatherBloc = WeatherBloc(widget.position);
     return Center(
       child: StreamBuilder<Favorite>(
-        stream: bloc.get,
+        stream: favoriteBloc.get,
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.none:
@@ -41,6 +46,22 @@ class _WeatherState extends State<WeatherWidget> {
 
   Widget _weatherWidget(Favorite favorite) {
     isFavorite = (favorite == null) ? false : true;
+    return StreamBuilder<WeatherResp>(
+      stream: weatherBloc.get,
+      builder: (context, snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.none:
+          case ConnectionState.waiting:
+            return CircularProgressIndicator();
+          case ConnectionState.active:
+          case ConnectionState.done:
+            return _weatherBodyWidget(snapshot.data, favorite);
+        }
+      },
+    );
+  }
+
+  Widget _weatherBodyWidget(WeatherResp weatherResp, Favorite favorite) {
     return SizedBox(
       child: Container(
         width: MediaQuery.of(context).size.width * 0.7,
@@ -57,7 +78,7 @@ class _WeatherState extends State<WeatherWidget> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Text(
-                    widget.weatherResp.name,
+                    weatherResp.name,
                     style: TextStyle(color: Colors.white70),
                   ),
                   InkWell(
@@ -68,9 +89,9 @@ class _WeatherState extends State<WeatherWidget> {
                     onTap: () {
                       setState(() {
                         if (isFavorite) {
-                          bloc.delete.add(favorite);
+                          favoriteBloc.delete.add(favorite);
                         } else {
-                          bloc.save.add(Favorite(id: "${widget.weatherResp.coord.lat}-${widget.weatherResp.coord.lon}", lat: widget.weatherResp.coord.lat, lon: widget.weatherResp.coord.lon, name: widget.weatherResp.name));
+                          favoriteBloc.save.add(Favorite(id: "${widget.position.latitude}-${widget.position.longitude}", lat: widget.position.latitude, lon: widget.position.longitude, name: weatherResp.name));
                         }
                         isFavorite = !isFavorite;
                       });
@@ -80,9 +101,9 @@ class _WeatherState extends State<WeatherWidget> {
               ),
             ),
             Image.network(
-                "http://openweathermap.org/img/w/${widget.weatherResp.weather[0].icon}.png"),
+                "http://openweathermap.org/img/w/${weatherResp.weather[0].icon}.png"),
             Text(
-              "${widget.weatherResp.weather[0].main}",
+              "${weatherResp.weather[0].main}",
               style: TextStyle(
                   fontSize: 24,
                   color: Colors.white,
@@ -92,7 +113,7 @@ class _WeatherState extends State<WeatherWidget> {
               height: 8,
             ),
             Text(
-              "${widget.weatherResp.main.temp}℃",
+              "${weatherResp.main.temp}℃",
               style: TextStyle(fontSize: 16, color: Colors.white),
             ),
             SizedBox(height: 24),
@@ -103,7 +124,7 @@ class _WeatherState extends State<WeatherWidget> {
                   children: <Widget>[
                     Text("Min Temp",
                         style: TextStyle(color: Colors.white70)),
-                    Text("${widget.weatherResp.main.temp_min}℃",
+                    Text("${weatherResp.main.temp_min}℃",
                         style: TextStyle(color: Colors.white)),
                   ],
                 ),
@@ -111,7 +132,7 @@ class _WeatherState extends State<WeatherWidget> {
                   children: <Widget>[
                     Text("Max Temp",
                         style: TextStyle(color: Colors.white70)),
-                    Text("${widget.weatherResp.main.temp_max}℃",
+                    Text("${weatherResp.main.temp_max}℃",
                         style: TextStyle(color: Colors.white)),
                   ],
                 ),
@@ -130,8 +151,7 @@ class _WeatherState extends State<WeatherWidget> {
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: ForecastWidget(widget.weatherResp.coord.lon,
-                  widget.weatherResp.coord.lat),
+              child: ForecastWidget(widget.position.longitude, widget.position.latitude),
             )
           ],
         ),

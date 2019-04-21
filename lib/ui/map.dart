@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-class MapView extends StatefulWidget {
+class MapWidget extends StatefulWidget {
   Position position;
 
-  MapView(this.position);
+  MapWidget(this.position);
 
   @override
-  State<MapView> createState() => MapViewState(position);
+  State<MapWidget> createState() => MapWidgetState(position);
 }
 
-class MapViewState extends State<MapView> {
+class MapWidgetState extends State<MapWidget> {
   Marker _marker;
 
-  MapViewState(Position position)
+  MapWidgetState(Position position)
       : _marker = _createMarker(position.latitude, position.longitude);
 
   @override

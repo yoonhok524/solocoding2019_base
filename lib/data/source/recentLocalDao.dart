@@ -2,10 +2,10 @@ import 'package:solocoding2019_base/data/model/recent.dart';
 import 'package:solocoding2019_base/data/database.dart';
 import 'package:sqflite/sqflite.dart';
 
-class RecentLocalDataSource {
+class RecentLocalDao {
   var _db;
 
-  RecentLocalDataSource() {
+  RecentLocalDao() {
     _db = DatabaseHelper().getDatabase();
   }
 
@@ -22,6 +22,7 @@ class RecentLocalDataSource {
   }
 
   Future<void> save(Recent recent) async {
+    print("[RecentLocalDao][Weather] save - $recent");
     final dbClient = await db;
     await dbClient.insert(
       'recents',
