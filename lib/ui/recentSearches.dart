@@ -60,6 +60,7 @@ class RecentSearchesPage extends StatelessWidget {
         ),
       ),
       onTap: () {
+        print("[Weather] RecentSearch - onTap: $recent");
         Navigator.pop(context, recent);
       },
     );

@@ -84,6 +84,7 @@ class HomeState extends State<HomePage> {
             final result = await Navigator.pushNamed(context, '/recentSearches');
             if (result is Recent) {
               setState(() {
+                _isManual = true;
                 _position = Position(latitude: result.lat, longitude: result.lon);
               });
             }
