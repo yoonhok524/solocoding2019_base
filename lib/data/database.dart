@@ -13,7 +13,7 @@ class DatabaseHelper {
       join(await getDatabasesPath(), 'weather_database.db'),
       onCreate: (db, version) {
         db.execute("CREATE TABLE favorites("
-            "id INTEGER PRIMARY KEY, "
+            "id TEXT PRIMARY KEY, "
             "name TEXT, "
             "lon REAL, "
             "lat REAL)");

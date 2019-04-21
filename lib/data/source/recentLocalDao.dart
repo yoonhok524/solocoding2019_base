@@ -16,7 +16,7 @@ class RecentLocalDataSource {
   }
 
   Future<List<Recent>> getAll() async {
-    final Database dbClient = await db;
+    final dbClient = await db;
     final List<Map<String, dynamic>> maps = await dbClient.query('recents', orderBy: "time");
     return List.generate(maps.length, (i) => Recent.fromJson(maps[i]));
   }

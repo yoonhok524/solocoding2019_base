@@ -15,8 +15,8 @@ class FavoriteLocalDataSource {
     return _db;
   }
 
-  Future<void> insert(Favorite favorite) async {
-    final Database dbClient = await db;
+  Future<void> save(Favorite favorite) async {
+    final dbClient = await db;
     await dbClient.insert(
       'favorites',
       favorite.toMap(),
@@ -24,23 +24,30 @@ class FavoriteLocalDataSource {
     );
   }
 
+  Future<Favorite> get(String favoriteId) async {
+    final dbClient = await db;
+    final List<Map<String, dynamic>> maps = await dbClient.query('favorites', where: "id = ?", whereArgs: [favoriteId], limit: 1);
+
+    if (maps.length == 0) {
+      return null;
+    }
+
+    return Favorite.fromJson(maps[0]);
+  }
+
+  Future<bool> isExist(String favoriteId) async {
+    final dbClient = await db;
+    final List<Map<String, dynamic>> maps = await dbClient.query('favorites', where: "id = ?", whereArgs: [favoriteId], limit: 1);
+    return maps.length == 1;
+  }
+
   Future<List<Favorite>> getAll() async {
-    final Database dbClient = await db;
+    final dbClient = await db;
     final List<Map<String, dynamic>> maps = await dbClient.query('favorites');
     return List.generate(maps.length, (i) => Favorite.fromJson(maps[i]));
   }
 
-  Future<void> update(Favorite favorite) async {
-    final dbClient = await db;
-    await dbClient.update(
-      'favorites',
-      favorite.toMap(),
-      where: "id = ?",
-      whereArgs: [favorite.id],
-    );
-  }
-
-  Future<void> delete(int id) async {
+  Future<void> delete(String id) async {
     final dbClient = await db;
     await dbClient.delete(
       'favorites',

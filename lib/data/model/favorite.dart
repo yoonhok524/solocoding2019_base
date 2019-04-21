@@ -1,5 +1,5 @@
 class Favorite {
-  final int id;
+  final String id;
   final String name;
   final double lon;
   final double lat;
