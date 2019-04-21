@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:solocoding2019_base/bloc/recentSearchesBloc.dart';
 import 'package:solocoding2019_base/bloc/homeBloc.dart';
@@ -12,11 +13,15 @@ import 'package:solocoding2019_base/ui/map.dart';
 const BASE_URL = "http://api.openweathermap.org/data/2.5";
 
 class HomePage extends StatefulWidget {
+
   @override
   State<StatefulWidget> createState() => HomeState();
+
 }
 
 class HomeState extends State<HomePage> {
+  static const platform = const MethodChannel('solocoding2019_base/alarm');
+
   final RecentSearchesBloc recentBloc = RecentSearchesBloc(RecentLocalDao());
   final HomeBloc homeBloc = HomeBloc(FavoriteLocalDao());
 
@@ -40,15 +45,17 @@ class HomeState extends State<HomePage> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-      appBar: AppBar(
-        title: Text("Flutter Weather App"),
-        actions: _optionMenus(),
-      ),
-      body: _body(),
-    );
+  Widget build(BuildContext context) =>
+      Scaffold(
+        appBar: AppBar(
+          title: Text("Flutter Weather App"),
+          actions: _optionMenus(),
+        ),
+        body: _body(),
+      );
 
-  List<Widget> _optionMenus() => <Widget>[
+  List<Widget> _optionMenus() =>
+      <Widget>[
         IconButton(
           icon: Icon(Icons.map),
           onPressed: () async {
@@ -65,11 +72,13 @@ class HomeState extends State<HomePage> {
         IconButton(
           icon: Icon(Icons.history),
           onPressed: () async {
-            final result = await Navigator.pushNamed(context, '/recentSearches');
+            final result = await Navigator.pushNamed(
+                context, '/recentSearches');
             if (result is Recent) {
               setState(() {
                 homeBloc.isManual = true;
-                homeBloc.updatePosition.add(Position(latitude: result.lat, longitude: result.lon));
+                homeBloc.updatePosition.add(
+                    Position(latitude: result.lat, longitude: result.lon));
               });
             }
             print("[Weather] recentSearch - result: $result");
@@ -97,10 +106,12 @@ class HomeState extends State<HomePage> {
   }
 
   Widget _weatherPages(List<Position> positionList) {
-    print("[Weather] _weatherPages - positionList.size: ${positionList.length}");
+    print(
+        "[Weather] _weatherPages - positionList.size: ${positionList.length}");
     List<Widget> weatherList = List();
     weatherList.add(MainWeatherWidget(positionList[0]));
-    weatherList.addAll(positionList.skip(1).map((p) => FavoriteWeatherWidget(p)).toList());
+    weatherList.addAll(
+        positionList.skip(1).map((p) => FavoriteWeatherWidget(p)).toList());
 
     print("[Weather] _weatherPages - size: ${weatherList.length}");
     return PageView(
@@ -138,4 +149,5 @@ class HomeState extends State<HomePage> {
           );
         },
       );
+
 }

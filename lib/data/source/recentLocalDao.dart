@@ -21,6 +21,16 @@ class RecentLocalDao {
     return List.generate(maps.length, (i) => Recent.fromJson(maps[i]));
   }
 
+  Future<Recent> getLatest() async {
+    final dbClient = await db;
+    final List<Map<String, dynamic>> maps = await dbClient.query('recents', orderBy: "time");
+    if (maps != null && maps.isNotEmpty) {
+      return Recent.fromJson(maps.first);
+    }
+
+    return null;
+  }
+
   Future<void> save(Recent recent) async {
     print("[RecentLocalDao][Weather] save - $recent");
     final dbClient = await db;
